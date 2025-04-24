@@ -1,4 +1,3 @@
-# app.py (full updated code)
 from flask import Flask, request, jsonify, render_template
 import google.generativeai as genai
 from qdrant_client import QdrantClient
@@ -9,8 +8,8 @@ import uuid
 
 app = Flask(__name__)
 
-# Configure Gemini API (replace with your actual API key)
-genai.configure(api_key="AIzaSyB8y6XYJ6QSk9qQ7ClkPbu8dtH19N5QCTE")  # Replace with your key!
+# Configure Gemini API using environment variable
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # Initialize Qdrant client (in-memory for simplicity)
 qdrant_client = QdrantClient(":memory:")
@@ -76,9 +75,9 @@ def chat():
         {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
     ]
 
-    # Generate response with Gemini, with specific topic guidance
+    # Generate response with Gemini
     model = genai.GenerativeModel(
-        "gemini-1.5-flash",  # Note: Updated to a valid model (gemini-2.0-flash may not exist)
+        "gemini-1.5-flash",
         safety_settings=safety_settings
     )
     prompt = (
@@ -107,4 +106,5 @@ def chat():
         return jsonify({"response": "<p>Error: Unable to generate a response. Please try again.</p>"})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.getenv("PORT", 5000))  # Use PORT env var for Render, default to 5000 locally
+    app.run(host="0.0.0.0", port=port, debug=False)
