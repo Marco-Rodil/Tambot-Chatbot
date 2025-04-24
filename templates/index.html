@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tamaraw Bot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="toolbar">
+        <img src="{{ url_for('static', filename='FEUSHSLogo.png') }}" alt="FEU SHS Logo" class="logo">
+        <h1>Tamaraw Bot</h1>
+    </header>
+    <div class="chat-content">
+        <div id="chat-history"></div>
+        <button id="scroll-to-bottom" onclick="scrollToBottom()">↓</button>
+        <div class="input-area">
+            <div class="input-wrapper">
+                <textarea id="message" placeholder="Ask me about FEU SHS (tuition, strands, etc.)..."></textarea>
+                <button onclick="sendMessage()" class="send-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </div>
+            <p class="gemini-tag">Powered by Gemini 2.0</p>
+        </div>
+    </div>
+    <footer class="footer">
+        <p>This chatbot is created for study purposes only and is not affiliated with Far Eastern University (FEU). All data is used for educational demonstration.</p>
+        <p>© 2025 Marco Elijah P. Rodil | BSCS-3A</p>
+    </footer>
+
+    <script>
+        function sendMessage() {
+            const message = document.getElementById("message").value;
+            if (!message.trim()) return;
+
+            const chatHistory = document.getElementById("chat-history");
+            chatHistory.innerHTML += `<div class="user-message"><strong>You:</strong> ${message}</div>`;
+            document.getElementById("message").value = "";
+
+            fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                chatHistory.innerHTML += `
+                    <div class="bot-message">
+                        <strong>TamBot:</strong> ${data.response}
+                        <button class="copy-btn" onclick="copyToClipboard(this)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>`;
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+                updateScrollButtonVisibility();
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        function copyToClipboard(button) {
+            const botText = button.previousSibling.textContent.replace("TamBot:", "").trim();
+            navigator.clipboard.writeText(botText);
+            button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+            setTimeout(() => {
+                button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+            }, 2000);
+        }
+
+        function scrollToBottom() {
+            const chatHistory = document.getElementById("chat-history");
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        function updateScrollButtonVisibility() {
+            const chatHistory = document.getElementById("chat-history");
+            const scrollBtn = document.getElementById("scroll-to-bottom");
+            scrollBtn.style.display = (chatHistory.scrollHeight > chatHistory.clientHeight && chatHistory.scrollTop + chatHistory.clientHeight < chatHistory.scrollHeight - 10) ? "block" : "none";
+        }
+
+        document.getElementById("message").addEventListener("keypress", function(e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        document.getElementById("chat-history").addEventListener("scroll", updateScrollButtonVisibility);
+        window.addEventListener("resize", updateScrollButtonVisibility);
+    </script>
+</body>
+</html>
