@@ -77,9 +77,12 @@ def chat():
 
     # Generate response with Gemini
     model = genai.GenerativeModel(
-        "gemini-1.5-flash",
-        safety_settings=safety_settings
-    )
+        "gemini-2.0-flash-001",                        
+        safety_settings=safety_settings)
+    #OLD: model = genai.GenerativeModel(
+    #    "gemini-1.5-flash",
+    #    safety_settings=safety_settings
+    #)
     prompt = (
         f"You are Tamaraw Bot, a chatbot primarily designed to assist with questions about FEU Senior High School (FEU SHS). "
         f"Your main focus is FEU SHS-related topics (e.g., tuition, strands, enrollment), but you can also:\n"
